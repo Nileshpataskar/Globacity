@@ -64,6 +64,16 @@ class TowerPublicSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'floors']
 
 
+class BulkUnitSerializer(serializers.Serializer):
+    number = serializers.CharField(max_length=20)
+    floor = serializers.IntegerField(required=False, allow_null=True)
+    unit_type = serializers.ChoiceField(choices=Unit.Type.choices, required=False)
+
+
+class BulkUnitsSerializer(serializers.Serializer):
+    units = BulkUnitSerializer(many=True, allow_empty=False, max_length=2000)
+
+
 class GenerateUnitsSerializer(serializers.Serializer):
     floor_from = serializers.IntegerField(min_value=0)
     floor_to = serializers.IntegerField(min_value=0)

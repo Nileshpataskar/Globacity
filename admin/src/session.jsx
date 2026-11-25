@@ -108,7 +108,11 @@ export function SessionProvider({ children }) {
   return (
     <SessionContext.Provider value={value}>
       {children}
-      {toast && <div key={toast.id} className={`toast${toast.error ? ' error' : ''}`} role="status">{toast.message}</div>}
+      {toast && (
+        <div key={toast.id} className={`toast${toast.error ? ' error' : ''}`} role="status">
+          {toast.error ? '⚠' : '✓'} {toast.message}
+        </div>
+      )}
     </SessionContext.Provider>
   );
 }
@@ -122,4 +126,13 @@ export function Badge({ value }) {
 
 export function Spinner() {
   return <div className="spinner" aria-label="Loading" />;
+}
+
+/** Full-page loading: the GlobaCity mark breathing. */
+export function BrandLoader() {
+  return (
+    <div className="brand-loader" aria-label="Loading">
+      <img src="./brand/lettermark.svg" width="64" height="64" alt="" />
+    </div>
+  );
 }

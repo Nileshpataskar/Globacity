@@ -2,7 +2,13 @@
 
 import uuid
 
-from django.db.models import Q
+from django.db import transaction
+from django.db.models import ProtectedError, Q
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers
+from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.response import Response
 
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -201,6 +207,26 @@ class _CommunityRoleViewSetMixin:
 
 class ManageViewSet(_CommunityRoleViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsCommunityManager]
+
+    @extend_schema(request=inline_serializer('BulkDelete', {'ids': serializers.ListField(child=serializers.CharField())}),
+                   responses=inline_serializer('BulkDeleteResult', {'deleted': serializers.IntegerField()}))
+    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        """Delete several rows at once. Only rows the caller can see (their community / towers) are touched."""
+        if 'delete' not in self.http_method_names:
+            raise MethodNotAllowed('POST', 'This list does not allow deleting.')
+        ids = request.data.get('ids') or []
+        if not isinstance(ids, list) or not ids or len(ids) > 1000:
+            raise ValidationError({'ids': 'Send 1–1000 ids.'})
+        qs = self.get_queryset().filter(pk__in=ids)
+        count = qs.count()
+        try:
+            with transaction.atomic():
+                for obj in qs:
+                    self.perform_destroy(obj)
+        except ProtectedError:
+            raise ValidationError({'detail': 'Some of these are still in use and cannot be deleted.'})
+        return Response({'deleted': count})
 
 
 class ManageReadOnlyViewSet(_CommunityRoleViewSetMixin, viewsets.ReadOnlyModelViewSet):

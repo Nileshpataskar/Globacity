@@ -4,11 +4,11 @@ import Layout from './components/Layout.jsx';
 import Login from './components/Login.jsx';
 import { BulkBill, CommunitySettings } from './components/Pages.jsx';
 import ResourcePage from './components/ResourcePage.jsx';
-import { SessionProvider, Spinner, useSession } from './session.jsx';
+import { BrandLoader, SessionProvider, useSession } from './session.jsx';
 
 function Gate() {
   const { loading, user } = useSession();
-  if (loading) return <Spinner />;
+  if (loading) return <BrandLoader />;
   if (!user) return <Login />;
   return (
     <HashRouter>

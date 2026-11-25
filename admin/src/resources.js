@@ -108,7 +108,10 @@ R.towers = {
     { key: 'contact_name', label: 'Tower contact person' },
     { key: 'contact_phone', label: 'Contact phone', type: 'phone' },
   ],
-  actions: [{ label: 'Quick add flats', custom: 'quickFlats', tone: 'primary' }],
+  actions: [
+    { label: 'Building plan', custom: 'plan', tone: 'primary' },
+    { label: 'Add flats', custom: 'quickFlats', tone: '' },
+  ],
 };
 
 R.units = {
@@ -511,7 +514,7 @@ R.forum = {
     { label: '', badge: (j) => (j.is_locked ? ['Locked', ''] : null) },
   ],
   titleOf: (j) => j.title, details: (j) => [['Post', j.body]],
-  canCreate: false, canEdit: false,
+  canCreate: false, canEdit: false, bulkDelete: false,
   actions: [{ label: 'Lock / unlock replies', path: 'lock/', tone: 'warning' }],
 };
 
@@ -552,7 +555,7 @@ R['platform-communities'] = {
 R['platform-cities'] = {
   title: 'Cities', path: '/platform/cities/', icon: '🗺️', platformOnly: true,
   columns: [{ label: 'City', value: (j) => j.name }, { label: 'State', value: (j) => j.state }, { label: 'Country', value: (j) => j.country_name }],
-  titleOf: (j) => j.name, sendCommunity: false, filterByCommunity: false, createLabel: 'Add city',
+  titleOf: (j) => j.name, sendCommunity: false, filterByCommunity: false, createLabel: 'Add city', bulkDelete: false,
   fields: [
     { key: 'country', label: 'Country', type: 'ref', ref: '/platform/countries/', refCommunity: false, required: true },
     { key: 'name', label: 'City', required: true },

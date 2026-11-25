@@ -17,6 +17,7 @@ from apps.notifications.service import notify, notify_community_staff
 
 from .models import Community, EmergencyContact, Gate, Membership, StaffMember, Tower, Unit
 from .serializers import (
+    BulkUnitsSerializer,
     CommunityPublicSerializer,
     CommunitySerializer,
     ContactItemSerializer,
@@ -87,6 +88,27 @@ class ManageTowerViewSet(ManageViewSet):
         return instance
     filterset_fields = ['community']
     search_fields = ['name', 'code']
+
+    @extend_schema(request=BulkUnitsSerializer, responses=GenerateUnitsResponseSerializer)
+    @action(detail=True, methods=['post'], url_path='bulk-units')
+    def bulk_units(self, request, pk=None):
+        """Create exactly the given flats (from the building-plan preview). Existing numbers are skipped."""
+        tower = self.get_object()
+        s = BulkUnitsSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        existing = set(tower.units.values_list('number', flat=True))
+        new = []
+        for u in s.validated_data['units']:
+            number = u['number'].strip()
+            if number and number not in existing:
+                existing.add(number)
+                new.append(Unit(tower=tower, number=number, floor=u.get('floor'), unit_type=u.get('unit_type') or Unit.Type.APARTMENT))
+        Unit.objects.bulk_create(new)
+        top = max([u.floor for u in new if u.floor is not None], default=0)
+        if top > tower.floors:
+            tower.floors = top
+            tower.save(update_fields=['floors'])
+        return Response({'created': len(new), 'skipped': len(s.validated_data['units']) - len(new)})
 
     @extend_schema(request=GenerateUnitsSerializer, responses=GenerateUnitsResponseSerializer)
     @action(detail=True, methods=['post'], url_path='generate-units')

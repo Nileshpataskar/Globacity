@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">GlobaCity monochrome logo</title><desc id="desc">Single-colour geometric G lettermark and GlobaCity wordmark.</desc>
+  <g transform="translate(24 16) scale(.56)" fill="#101828">
+    <path d="M256 42 424 139 424 205 351 163 256 108 161 163 161 273 256 328 351 273 351 252 256 252 307 207 424 207 424 310 256 407 88 310 88 139Z"/>
+    <path d="M88 139 161 163 161 273 256 328 256 407 88 310Z"/>
+    <path d="M256 328 351 273 351 252 256 252 307 207 424 207 424 310 256 407Z"/>
+  </g>
+  <text x="310" y="202" font-family="Inter, Montserrat, Arial, sans-serif" font-size="126" font-weight="750" letter-spacing="-5" fill="#101828">GlobaCity</text>
+</svg>

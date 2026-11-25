@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">GlobaCity primary horizontal logo</title><desc id="desc">Geometric G icon beside the GlobaCity wordmark.</desc>
+  <defs>
+    <linearGradient id="gTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101828"/><stop offset=".52" stop-color="#2563EB"/><stop offset="1" stop-color="#38BDF8"/></linearGradient>
+    <linearGradient id="gBottom" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#38BDF8"/></linearGradient>
+    <linearGradient id="wordBlue" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#38BDF8"/></linearGradient>
+  </defs>
+  <g transform="translate(24 16) scale(.56)">
+    <path fill="url(#gTop)" d="M256 42 424 139 424 205 351 163 256 108 161 163 161 273 256 328 351 273 351 252 256 252 307 207 424 207 424 310 256 407 88 310 88 139Z"/>
+    <path fill="#101828" opacity=".96" d="M88 139 161 163 161 273 256 328 256 407 88 310Z"/>
+    <path fill="url(#gBottom)" d="M256 328 351 273 351 252 256 252 307 207 424 207 424 310 256 407Z"/>
+    <path fill="#38BDF8" d="M307 207h117v103l-73-37v-21H256Z"/>
+  </g>
+  <text x="310" y="202" font-family="Inter, Montserrat, Arial, sans-serif" font-size="126" font-weight="750" letter-spacing="-5" fill="#101828">Globa</text>
+  <text x="665" y="202" font-family="Inter, Montserrat, Arial, sans-serif" font-size="126" font-weight="750" letter-spacing="-5" fill="url(#wordBlue)">City</text>
+</svg>

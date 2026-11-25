@@ -1,0 +1,26 @@
+# Render Blueprint: Django API (Docker) on the free plan. Database = Neon (paste its URL when Render asks).
+services:
+  - type: web
+    name: globacity-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health/
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # paste the Neon connection string
+      - key: ADMIN_PASSWORD
+        sync: false          # password for the "admin" login (dashboard + Django admin)
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CORS_ALLOW_ALL
+        value: "true"
+      - key: OTP_SHOW_CODE
+        value: "true"        # no SMS provider yet: the app shows the login code. Turn off when SMS is added.
+      - key: SERVE_MEDIA
+        value: "true"

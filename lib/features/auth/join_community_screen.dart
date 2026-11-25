@@ -191,6 +191,11 @@ class _JoinCommunityScreenState extends ConsumerState<JoinCommunityScreen> {
             future: _towers,
             builder: (context, snap) => !snap.hasData
                 ? (snap.hasError ? Text('${snap.error}') : const LinearProgressIndicator())
+                : snap.data!.isEmpty
+                ? _NotSetUp(
+                    message: '${c.name} hasn\'t added its towers and flats yet. '
+                        'Please ask your community management to set them up, then try again.',
+                  )
                 : Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
@@ -208,6 +213,8 @@ class _JoinCommunityScreenState extends ConsumerState<JoinCommunityScreen> {
               future: _units,
               builder: (context, snap) => !snap.hasData
                   ? (snap.hasError ? Text('${snap.error}') : const LinearProgressIndicator())
+                  : snap.data!.isEmpty
+                  ? _NotSetUp(message: '${_tower?.name ?? 'This tower'} has no flats yet. Please ask your community management to add them.')
                   : DropdownMenu<UnitOption>(
                       expandedInsets: EdgeInsets.zero,
                       enableFilter: true,
@@ -245,8 +252,26 @@ class _JoinCommunityScreenState extends ConsumerState<JoinCommunityScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
-        FilledButton(onPressed: _submitting ? null : _submit, child: const Text('Request to join')),
+        GradientButton(label: 'Request to join', busy: _submitting, onPressed: _unit == null ? null : _submit),
       ],
     );
   }
+}
+
+/// Shown when a community has no towers, or a tower has no flats, yet.
+class _NotSetUp extends StatelessWidget {
+  const _NotSetUp({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+        color: context.palette.warning.withValues(alpha: 0.08),
+        borderColor: context.palette.warning.withValues(alpha: 0.35),
+        child: Row(children: [
+          Icon(Icons.apartment_rounded, color: context.palette.warning),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: Text(message, style: context.text.bodySmall?.copyWith(color: context.scheme.onSurface))),
+        ]),
+      );
 }

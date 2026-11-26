@@ -73,6 +73,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                       .shimmer(duration: 1200.ms, color: Colors.white24),
                   const SizedBox(height: AppSpacing.xl),
                   const BrandWordmark(size: 34, onDark: true, showMark: false).enter(4, 0.4),
+                  if (AppConfig.guardApp) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.16),
+                        border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.5)),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        const Icon(Icons.verified_user_rounded, color: Color(0xFF4ADE80), size: 16),
+                        const SizedBox(width: 6),
+                        Text('GUARD', style: context.text.labelMedium?.copyWith(color: const Color(0xFF4ADE80), letterSpacing: 2)),
+                      ]),
+                    ).enter(5, 0.4),
+                  ],
                   const SizedBox(height: AppSpacing.sm),
                   Text(AppConfig.tagline, textAlign: TextAlign.center,
                           style: context.text.bodyMedium?.copyWith(color: Colors.white70))

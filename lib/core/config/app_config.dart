@@ -14,7 +14,7 @@ class AppConfig {
   static String? assetPackage;
 
   static String get appName => guardApp ? 'GlobaCity Guard' : 'GlobaCity';
-  static const tagline = 'Smarter living for your community';
+  static String get tagline => guardApp ? 'Security desk · gate, visitors & safety' : 'Smarter living for your community';
   static const logoIcon = Icons.apartment_rounded;
 
   static const currency = 'AED';

@@ -1,17 +1,13 @@
-# globacity_guard
+# GlobaCity Guard
 
-GlobaCity Guard: security desk app
+Security-desk app for guards (and admins/managers who run the gate). It is a thin shell: all screens and logic come
+from the main GlobaCity package one folder up (`../lib`, started via `runGuardApp()`).
 
-## Getting Started
+```bash
+cd guard_app
+flutter run --dart-define=API_URL=https://globacity-api.onrender.com            # emulator / phone
+flutter build apk --release --split-per-abi --dart-define=API_URL=https://globacity-api.onrender.com
+```
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Guards sign in with the phone number an admin added under **Staff & roles** (role: Guard).
+Icon: `assets/icon/` → `dart run flutter_launcher_icons`.

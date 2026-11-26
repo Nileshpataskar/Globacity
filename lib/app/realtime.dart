@@ -40,8 +40,12 @@ class Realtime {
     final token = ref.read(tokenStoreProvider).access;
     if (!_active || token == null) return;
     try {
-      _channel = WebSocketChannel.connect(Uri.parse('${Env.wsUrl}?token=$token'));
-      _sub = _channel!.stream.listen(_onMessage, onDone: _reconnectLater, onError: (_) => _reconnectLater());
+      final channel = WebSocketChannel.connect(Uri.parse('${Env.wsUrl}?token=$token'));
+      _channel = channel;
+      // A failed handshake (server restarting, offline) must not surface as an uncaught error: just retry.
+      channel.ready.catchError((_) {});
+      _sub = channel.stream.listen(_onMessage, onDone: _reconnectLater, onError: (_) => _reconnectLater(),
+          cancelOnError: true);
     } catch (_) {
       _reconnectLater();
     }

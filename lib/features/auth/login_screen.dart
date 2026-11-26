@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'auth_scaffold.dart';
 import '../../app/router.dart';
+import '../../core/config/app_config.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/context_ext.dart';
 import '../../core/widgets/widgets.dart';
@@ -66,14 +67,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   CountryOption _defaultCountry(List<CountryOption> countries) =>
-      countries.firstWhere((c) => c.iso2 == 'AE', orElse: () => countries.first);
+      countries.firstWhere((c) => c.iso2 == 'IN', orElse: () => countries.first);
 
   @override
   Widget build(BuildContext context) {
     final countries = ref.watch(countriesProvider);
     return AuthScaffold(
-      title: 'Welcome back',
-      subtitle: 'Sign in to manage your home and community.',
+      title: AppConfig.guardApp ? 'Guard sign in' : 'Welcome back',
+      subtitle: AppConfig.guardApp
+          ? 'Use the phone number your society added you with.'
+          : 'Sign in to manage your home and community.',
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xl),
@@ -104,6 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   busy: _busy,
                   onPressed: !countries.hasValue ? null : () => _submit(countries.value!),
                 ),
+                if (!AppConfig.guardApp) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
                   alignment: WrapAlignment.center,
@@ -135,6 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     label: Text(label),
                   ),
                   const SizedBox(height: AppSpacing.md),
+                ],
                 ],
                 const SizedBox(height: AppSpacing.md),
                 Wrap(

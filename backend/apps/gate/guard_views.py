@@ -151,7 +151,7 @@ class GuardContextView(APIView):
         shift = GuardShift.objects.filter(guard=request.user, ended_at__isnull=True).select_related('gate').first()
         return Response({
             'communities': [
-                {'id': str(c.id), 'name': c.name,
+                {'id': str(c.id), 'name': c.name, 'country': c.city.country.iso2, 'currency': c.currency.code,
                  'gates': GateMiniSerializer(c.gates.filter(is_active=True), many=True).data}
                 for c in guard_communities(request.user)
             ],

@@ -98,7 +98,7 @@ class LegalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sections = isTerms
-        ? const [
+        ? [
             ('1. Acceptance', 'By using ${AppConfig.appName} you agree to these terms and to the rules of your community association.'),
             ('2. Accounts', 'You are responsible for keeping your login and OTP codes confidential and for all activity on your account.'),
             ('3. Visitor management', 'Approvals you give through the app are treated as your authorisation for entry into the community.'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/models.dart';
 import '../features/auth/forgot_password_screen.dart';
 import '../features/auth/join_community_screen.dart';
 import '../features/auth/login_screen.dart';
@@ -191,7 +192,9 @@ final appRouter = GoRouter(
     _page(Routes.manageSettings, (_) => const CommunitySettingsScreen()),
     _page(Routes.guardShift, (_) => const ShiftScreen()),
     _page(Routes.guardScan, (_) => const ScanScreen()),
-    _page(Routes.guardWalkIn, (_) => const WalkInScreen()),
+    _page(Routes.guardWalkIn, (s) => WalkInScreen(
+          initialType: VisitorType.values.where((t) => t.name == s.uri.queryParameters['type']).firstOrNull,
+        )),
     _page(Routes.guardVehicles, (_) => const VehiclesScreen()),
     _page(Routes.guardIncidents, (_) => const IncidentsScreen()),
     _page(Routes.guardDirectory, (_) => const GuardDirectoryScreen()),

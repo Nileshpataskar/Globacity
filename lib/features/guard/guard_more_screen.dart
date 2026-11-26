@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../core/config/app_config.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/context_ext.dart';
 import '../../core/widgets/widgets.dart';
@@ -62,9 +63,9 @@ class GuardMoreScreen extends ConsumerWidget {
             title: 'Account',
             children: [
               MenuTile(icon: Icons.notifications_none_rounded, title: 'Notifications', onTap: () => context.push(Routes.notifications)),
-              if (hasUnits)
+              if (hasUnits && !AppConfig.guardApp)
                 MenuTile(icon: Icons.home_outlined, title: 'Switch to resident app', onTap: () => context.go(Routes.home)),
-              if (ref.watch(isManagerProvider))
+              if (ref.watch(isManagerProvider) && !AppConfig.guardApp)
                 MenuTile(icon: Icons.admin_panel_settings_outlined, title: 'Open management', onTap: () => context.go(Routes.manageHome)),
               MenuTile(icon: Icons.description_outlined, title: 'Terms & conditions', onTap: () => context.push(Routes.terms)),
             ],

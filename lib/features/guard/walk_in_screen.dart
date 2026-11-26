@@ -14,7 +14,10 @@ import '../../data/models.dart';
 
 /// Manual entry for visitors without a pass. Residents get an approve/deny request instantly.
 class WalkInScreen extends ConsumerStatefulWidget {
-  const WalkInScreen({super.key});
+  const WalkInScreen({super.key, this.initialType});
+
+  /// Pre-selected visitor type, e.g. delivery from the gate home's "Delivery" button.
+  final VisitorType? initialType;
 
   @override
   ConsumerState<WalkInScreen> createState() => _WalkInScreenState();
@@ -24,18 +27,31 @@ class _WalkInScreenState extends ConsumerState<WalkInScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _vehicle = TextEditingController();
-  VisitorType _type = VisitorType.guest;
+  late VisitorType _type = widget.initialType ?? VisitorType.guest;
   String? _company;
   int _guests = 1;
   DirectoryEntry? _unit;
   XFile? _photo;
   bool _saving = false;
 
-  static const _companies = {
-    VisitorType.delivery: ['Amazon', 'Noon', 'Talabat', 'Deliveroo', 'Careem Now', 'Other'],
-    VisitorType.cab: ['Careem', 'Uber', 'Taxi', 'Other'],
-    VisitorType.service: ['AC repair', 'Plumber', 'Electrician', 'Internet', 'Pest control', 'Other'],
+  /// Common companies by country, so the guard taps instead of typing.
+  static const _companiesByCountry = {
+    'IN': {
+      VisitorType.delivery: ['Swiggy', 'Zomato', 'Amazon', 'Flipkart', 'Blinkit', 'Zepto', 'BigBasket', 'Swiggy Instamart',
+          'Myntra', 'Blue Dart', 'Delhivery', 'Courier', 'Other'],
+      VisitorType.cab: ['Ola', 'Uber', 'Rapido', 'Auto rickshaw', 'Other'],
+      VisitorType.service: ['Plumber', 'Electrician', 'Carpenter', 'AC repair', 'Internet / cable', 'Pest control',
+          'Gas cylinder', 'Water can', 'Other'],
+    },
+    'AE': {
+      VisitorType.delivery: ['Amazon', 'Noon', 'Talabat', 'Deliveroo', 'Careem Now', 'Other'],
+      VisitorType.cab: ['Careem', 'Uber', 'Taxi', 'Other'],
+      VisitorType.service: ['AC repair', 'Plumber', 'Electrician', 'Internet', 'Pest control', 'Other'],
+    },
   };
+
+  Map<VisitorType, List<String>> get _companies =>
+      _companiesByCountry[ref.watch(guardContextProvider).value?.country] ?? _companiesByCountry['IN']!;
 
   @override
   void dispose() {

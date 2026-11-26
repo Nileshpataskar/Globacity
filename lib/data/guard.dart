@@ -48,7 +48,8 @@ class GuardShift {
 }
 
 class GuardContext {
-  const GuardContext({required this.communityId, required this.communityName, required this.gates, this.shift});
+  const GuardContext({required this.communityId, required this.communityName, required this.gates, this.shift,
+      this.country = '', this.currency = ''});
 
   factory GuardContext.fromJson(Json j) {
     final communities = (j['communities'] as List).cast<Json>();
@@ -56,6 +57,8 @@ class GuardContext {
     return GuardContext(
       communityId: _s(c['id']),
       communityName: _s(c['name']),
+      country: _s(c['country']),
+      currency: _s(c['currency']),
       gates: [for (final g in (c['gates'] as List? ?? [])) GateInfo.fromJson(g as Json)],
       shift: j['shift'] == null ? null : GuardShift.fromJson(j['shift'] as Json),
     );
@@ -63,6 +66,8 @@ class GuardContext {
 
   final String communityId;
   final String communityName;
+  final String country;
+  final String currency;
   final List<GateInfo> gates;
   final GuardShift? shift;
 }

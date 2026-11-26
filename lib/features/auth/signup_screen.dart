@@ -41,7 +41,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   CountryOption _defaultCountry(List<CountryOption> list) =>
-      list.firstWhere((c) => c.iso2 == 'AE', orElse: () => list.first);
+      list.firstWhere((c) => c.iso2 == 'IN', orElse: () => list.first);
 
   Future<void> _submit(List<CountryOption> countries) async {
     if (!_formKey.currentState!.validate()) return;

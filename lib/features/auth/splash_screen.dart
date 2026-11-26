@@ -43,7 +43,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         return;
       }
       final tokens = ref.read(tokenStoreProvider);
-      if (tokens.onboardingSeen) {
+      if (tokens.onboardingSeen || AppConfig.guardApp) {
         context.go(Routes.login);
       } else {
         await tokens.markOnboardingSeen();

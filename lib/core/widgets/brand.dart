@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../config/app_config.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../utils/context_ext.dart';
@@ -30,7 +31,8 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mark = SvgPicture.asset(tile ? BrandAssets.appIcon : BrandAssets.lettermark, width: size, height: size);
+    final mark = SvgPicture.asset(tile ? BrandAssets.appIcon : BrandAssets.lettermark, width: size, height: size,
+        package: AppConfig.assetPackage);
     if (!glow) return mark;
     return DecoratedBox(
       decoration: BoxDecoration(

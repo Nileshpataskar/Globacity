@@ -9,12 +9,17 @@ import '../../app/router.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/context_ext.dart';
 import '../../core/widgets/widgets.dart';
+import '../../data/api/api_client.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
 
 /// Create an account: details -> OTP verification -> join community.
 class SignupScreen extends ConsumerStatefulWidget {
-  const SignupScreen({super.key});
+  const SignupScreen({super.key, this.initialPhone, this.initialCountry});
+
+  /// Number carried over from the login screen ("not registered → sign up").
+  final String? initialPhone;
+  final String? initialCountry;
 
   @override
   ConsumerState<SignupScreen> createState() => _SignupScreenState();
@@ -23,7 +28,7 @@ class SignupScreen extends ConsumerStatefulWidget {
 class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
-  final _phone = TextEditingController();
+  late final _phone = TextEditingController(text: widget.initialPhone ?? '');
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -41,7 +46,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   CountryOption _defaultCountry(List<CountryOption> list) =>
-      list.firstWhere((c) => c.iso2 == 'IN', orElse: () => list.first);
+      list.firstWhere((c) => c.iso2 == (widget.initialCountry ?? 'IN'), orElse: () => list.first);
 
   Future<void> _submit(List<CountryOption> countries) async {
     if (!_formKey.currentState!.validate()) return;
@@ -57,9 +62,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ));
     setState(() => _busy = true);
     try {
-      final devCode = await ref.read(sessionProvider.notifier).requestOtp(phone);
+      final devCode = await ref.read(sessionProvider.notifier).requestOtp(phone, purpose: 'signup');
       if (mounted) {
         context.push('${Routes.otp}?to=${Uri.encodeComponent(phone)}${devCode != null ? '&dev=$devCode' : ''}');
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (e.code == 'already_registered') {
+        ref.read(pendingSignupProvider.notifier).set(null);
+        final signIn = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            icon: const Icon(Icons.how_to_reg_rounded, size: 36),
+            title: const Text('Already registered'),
+            content: Text('$phone already has an account. Sign in with this number instead.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sign in')),
+            ],
+          ),
+        );
+        if (signIn == true && mounted) context.canPop() ? context.pop() : context.go(Routes.login);
+      } else {
+        context.showSnack(e.message);
       }
     } catch (e) {
       if (mounted) context.showSnack(e.toString());

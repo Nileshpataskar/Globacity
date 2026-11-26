@@ -3,6 +3,7 @@ import {
   AlertTriangle, BadgeCheck, Building2, CalendarCheck, CalendarDays, CircleDollarSign, DoorOpen, FileText,
   Fence, Hammer, HeartPulse, LayoutDashboard, Landmark, Map, Megaphone, MessagesSquare, ReceiptText,
   ShieldAlert, Siren, Settings, Tags, Truck, UserCog, Users, Vote, Wallet, Wrench, Footprints, ShoppingBag, Bookmark,
+  ShieldCheck, Clock,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -26,6 +27,8 @@ export const ICONS = {
   vendors: Hammer,
   bookings: CalendarCheck,
   'visitor-log': Footprints,
+  'guard-duty': ShieldCheck,
+  'guard-shifts': Clock,
   sos: Siren,
   incidents: ShieldAlert,
   forum: MessagesSquare,

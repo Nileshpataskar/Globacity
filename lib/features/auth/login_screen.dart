@@ -9,6 +9,7 @@ import '../../core/config/app_config.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/context_ext.dart';
 import '../../core/widgets/widgets.dart';
+import '../../data/api/api_client.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
 import 'auth_flow.dart';
@@ -43,13 +44,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _submit(List<CountryOption> countries) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
+    ref.read(pendingSignupProvider.notifier).set(null); // a login is never a sign-up
     final session = ref.read(sessionProvider.notifier);
     if (_mode == _Mode.phone) {
       final phone = '${(_country ?? _defaultCountry(countries)).phoneCode}${_phone.text}';
       try {
-        final devCode = await session.requestOtp(phone);
+        final devCode = await session.requestOtp(phone, purpose: 'login');
         if (mounted) {
           context.push('${Routes.otp}?to=${Uri.encodeComponent(phone)}${devCode != null ? '&dev=$devCode' : ''}');
+        }
+      } on ApiException catch (e) {
+        if (!mounted) return;
+        if (e.code == 'not_registered') {
+          await _notRegistered(countries);
+        } else {
+          context.showSnack(e.message);
         }
       } catch (e) {
         if (mounted) context.showSnack(e.toString());
@@ -63,6 +72,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       });
       if (ok == true && mounted) await goAfterSignIn(context, ref);
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Unknown number on the login screen: offer sign-up (resident app) or explain (guard app). No account is created.
+  Future<void> _notRegistered(List<CountryOption> countries) async {
+    final country = _country ?? _defaultCountry(countries);
+    final number = '${country.phoneCode} ${_phone.text}';
+    final signUp = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(AppConfig.guardApp ? Icons.shield_outlined : Icons.person_search_rounded, size: 36),
+        title: Text(AppConfig.guardApp ? 'Not registered as staff' : 'Number not registered'),
+        content: Text(AppConfig.guardApp
+            ? '$number is not added as a guard yet. Ask your society admin to add you under Staff & roles, then sign in again.'
+            : '$number doesn\'t have a GlobaCity account yet. Create one in a minute: we\'ll verify the same number.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppConfig.guardApp ? 'OK' : 'Cancel')),
+          if (!AppConfig.guardApp)
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sign up')),
+        ],
+      ),
+    );
+    if (signUp == true && mounted) {
+      context.push('${Routes.signup}?phone=${Uri.encodeComponent(_phone.text)}&country=${country.iso2}');
     }
   }
 

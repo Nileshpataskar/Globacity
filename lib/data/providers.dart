@@ -39,15 +39,17 @@ class SessionNotifier extends Notifier<UserProfile?> {
   }
 
   /// Sends an OTP. Returns the code in development (DEBUG backend) for convenience.
-  Future<String?> requestOtp(String phone) async {
-    final res = await _api.post('/auth/otp/request/', data: {'phone': phone}, auth: false) as Json;
+  /// [purpose] `login` fails with code `not_registered` for unknown numbers; `signup` fails with
+  /// `already_registered` for existing ones.
+  Future<String?> requestOtp(String phone, {String? purpose}) async {
+    final res = await _api.post('/auth/otp/request/', data: {'phone': phone, 'purpose': ?purpose}, auth: false) as Json;
     return res['debug_code'] as String?;
   }
 
   /// Returns true when a new account was created. [fullName] names a new account.
-  Future<bool> verifyOtp(String phone, String code, {String? fullName}) async {
+  Future<bool> verifyOtp(String phone, String code, {String? fullName, String? purpose}) async {
     final res = await _api.post('/auth/otp/verify/',
-        data: {'phone': phone, 'code': code, 'full_name': ?fullName}, auth: false) as Json;
+        data: {'phone': phone, 'code': code, 'full_name': ?fullName, 'purpose': ?purpose}, auth: false) as Json;
     await _signIn(res);
     return res['is_new_user'] == true;
   }

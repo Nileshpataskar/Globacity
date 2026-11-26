@@ -55,6 +55,17 @@ class OTPRequestView(APIView):
         s = OTPRequestSerializer(data=request.data)
         s.is_valid(raise_exception=True)
         phone, _ = normalize_phone(s.validated_data['phone'])
+        purpose = s.validated_data.get('purpose')
+        existing = User.objects.filter(phone=phone).first()
+        if purpose == 'login' and existing is None:
+            return Response({'code': 'not_registered',
+                             'detail': 'This number is not registered yet. Please sign up first.'}, status=404)
+        if purpose == 'login' and not existing.is_active:
+            return Response({'code': 'disabled', 'detail': 'This account is disabled. Contact your community office.'},
+                            status=403)
+        if purpose == 'signup' and existing is not None:
+            return Response({'code': 'already_registered',
+                             'detail': 'This number is already registered. Please sign in instead.'}, status=409)
         code = f'{secrets.randbelow(1_000_000):06d}'
         OTPCode.objects.filter(phone=phone, is_used=False).update(is_used=True)
         OTPCode.objects.create(
@@ -91,6 +102,9 @@ class OTPVerifyView(APIView):
         otp.is_used = True
         otp.save(update_fields=['is_used'])
 
+        if s.validated_data.get('purpose') == 'login' and not User.objects.filter(phone=phone).exists():
+            return Response({'code': 'not_registered',
+                             'detail': 'This number is not registered yet. Please sign up first.'}, status=404)
         user, created = User.objects.get_or_create(
             phone=phone,
             defaults={

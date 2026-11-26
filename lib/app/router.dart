@@ -150,7 +150,10 @@ final appRouter = GoRouter(
     _page(Routes.login, (_) => const LoginScreen()),
     _page(Routes.otp, (s) => OtpScreen(phone: s.uri.queryParameters['to'] ?? '', devCode: s.uri.queryParameters['dev'])),
     _page(Routes.forgotPassword, (_) => const ForgotPasswordScreen()),
-    _page(Routes.signup, (_) => const SignupScreen()),
+    _page(Routes.signup, (s) => SignupScreen(
+          initialPhone: s.uri.queryParameters['phone'],
+          initialCountry: s.uri.queryParameters['country'],
+        )),
     _page(Routes.joinCommunity, (s) => JoinCommunityScreen(isOnboarding: s.uri.queryParameters['first'] == '1')),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => MainShell(shell: shell),

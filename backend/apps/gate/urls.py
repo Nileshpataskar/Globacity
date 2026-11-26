@@ -20,6 +20,7 @@ router.register('guard/staff', guard_views.GuardStaffViewSet, basename='guard-st
 router.register('guard/incidents', guard_views.GuardIncidentViewSet, basename='guard-incident')
 router.register('guard/gates', guard_views.GuardGateViewSet, basename='guard-gate')
 router.register('manage/incidents', guard_views.ManageIncidentViewSet, basename='manage-incident')
+router.register('manage/guard-shifts', guard_views.ManageGuardShiftViewSet, basename='manage-guard-shift')
 
 urlpatterns = [
     path('guard/context/', guard_views.GuardContextView.as_view(), name='guard-context'),

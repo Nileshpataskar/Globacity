@@ -66,7 +66,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final ok = await runAction(context, () async {
       final session = ref.read(sessionProvider.notifier);
       final signup = ref.read(pendingSignupProvider);
-      await session.verifyOtp(widget.phone, _controller.text, fullName: signup?.name);
+      await session.verifyOtp(widget.phone, _controller.text, fullName: signup?.name,
+          purpose: signup != null ? 'signup' : 'login');
       if (signup != null) {
         ref.read(pendingSignupProvider.notifier).set(null);
         try {
@@ -81,7 +82,15 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     if (!mounted) return;
     if (ok == true) {
       if (_signupWarning != null) context.showSnack(_signupWarning!);
-      await goAfterSignIn(context, ref);
+      try {
+        await goAfterSignIn(context, ref);
+      } catch (e) {
+        // Never leave the button spinning: show what went wrong and let the user try again.
+        if (mounted) {
+          context.showSnack(e.toString());
+          setState(() => _verifying = false);
+        }
+      }
     } else {
       _controller.clear();
       setState(() => _verifying = false);
@@ -89,7 +98,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   }
 
   Future<void> _resend() async {
-    final code = await runAction(context, () => ref.read(sessionProvider.notifier).requestOtp(widget.phone),
+    final purpose = ref.read(pendingSignupProvider) != null ? 'signup' : 'login';
+    final code = await runAction(context, () => ref.read(sessionProvider.notifier).requestOtp(widget.phone, purpose: purpose),
         success: 'A new code has been sent');
     if (mounted) setState(() => _devCode = code ?? _devCode);
     _startTimer();

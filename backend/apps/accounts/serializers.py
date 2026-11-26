@@ -26,6 +26,10 @@ class UserMiniSerializer(serializers.ModelSerializer):
 
 class OTPRequestSerializer(serializers.Serializer):
     phone = serializers.CharField(help_text='International format, e.g. +971501234567')
+    purpose = serializers.ChoiceField(
+        choices=['login', 'signup'], required=False,
+        help_text='login: the number must already have an account. signup: the number must be new. '
+                  'Omit for the legacy behaviour (sign in or create).')
 
 
 class OTPRequestResponseSerializer(serializers.Serializer):
@@ -38,6 +42,8 @@ class OTPVerifySerializer(serializers.Serializer):
     phone = serializers.CharField()
     code = serializers.CharField(min_length=6, max_length=6)
     full_name = serializers.CharField(required=False, allow_blank=True, help_text='Used when creating a new account')
+    purpose = serializers.ChoiceField(choices=['login', 'signup'], required=False,
+                                      help_text='login: never creates an account.')
 
 
 class AuthResponseSerializer(serializers.Serializer):

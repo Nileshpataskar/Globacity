@@ -1,6 +1,7 @@
 """Guard app endpoints: shifts, summary, vehicles, staff attendance, incidents, IoT gates, directory."""
 
 import re
+from datetime import timedelta
 
 from django.db.models import Q
 from django.utils import timezone
@@ -386,3 +387,104 @@ class ManageIncidentViewSet(ManageViewSet):
     queryset = Incident.objects.select_related('reported_by', 'unit__tower')
     filterset_fields = ['status', 'severity', 'community']
     http_method_names = ['get', 'patch']
+
+
+# ---------------------------------------------------------------------------
+# Guard duty (management)
+# ---------------------------------------------------------------------------
+
+
+class ManageGuardShiftSerializer(serializers.ModelSerializer):
+    guard_name = serializers.CharField(source='guard.full_name', read_only=True)
+    guard_phone = serializers.CharField(source='guard.phone', read_only=True)
+    gate_name = serializers.CharField(source='gate.name', read_only=True, default=None)
+    shift_label = serializers.CharField(source='get_shift_display', read_only=True)
+    on_duty = serializers.SerializerMethodField()
+    hours = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GuardShift
+        fields = ['id', 'community', 'guard', 'guard_name', 'guard_phone', 'gate', 'gate_name', 'shift', 'shift_label',
+                  'started_at', 'ended_at', 'on_duty', 'hours']
+
+    def get_on_duty(self, obj):
+        return obj.ended_at is None
+
+    def get_hours(self, obj):
+        end = obj.ended_at or timezone.now()
+        return round((end - obj.started_at).total_seconds() / 3600, 1)
+
+
+def _shift_hours(shifts, since):
+    """Hours worked inside [since, now] from a list of shifts."""
+    now = timezone.now()
+    total = 0.0
+    for s in shifts:
+        start, end = max(s.started_at, since), (s.ended_at or now)
+        if end > start:
+            total += (end - start).total_seconds()
+    return round(total / 3600, 1)
+
+
+class ManageGuardShiftViewSet(ManageViewSet):
+    """Guard duty log: who was on duty, where and for how long. Admins can end a shift a guard forgot to close."""
+
+    serializer_class = ManageGuardShiftSerializer
+    queryset = GuardShift.objects.select_related('guard', 'gate')
+    filterset_fields = {'ended_at': ['isnull'], 'started_at': ['gte', 'lte'], 'guard': ['exact'],
+                        'community': ['exact'], 'gate': ['exact'], 'shift': ['exact']}
+    search_fields = ['guard__full_name', 'guard__phone', 'gate__name']
+    http_method_names = ['get', 'post', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        raise ValidationError({'detail': 'Guards start shifts from the GlobaCity Guard app.'})
+
+    @extend_schema(request=None, responses=ManageGuardShiftSerializer)
+    @action(detail=True, methods=['post'])
+    def end(self, request, pk=None):
+        s = self.get_object()
+        if s.ended_at is None:
+            s.ended_at = timezone.now()
+            s.save(update_fields=['ended_at'])
+        return Response(ManageGuardShiftSerializer(s).data)
+
+    @extend_schema(parameters=[OpenApiParameter('community', str)], responses=inline_serializer('GuardBoardRow', {
+        'id': serializers.CharField(), 'name': serializers.CharField(), 'phone': serializers.CharField(),
+        'on_duty': serializers.BooleanField(), 'gate': serializers.CharField(allow_null=True),
+        'shift': serializers.CharField(allow_null=True), 'since': serializers.DateTimeField(allow_null=True),
+        'hours_today': serializers.FloatField(), 'hours_week': serializers.FloatField(),
+        'hours_month': serializers.FloatField(), 'last_seen': serializers.DateTimeField(allow_null=True),
+    }, many=True))
+    @action(detail=False, methods=['get'])
+    def board(self, request):
+        """One row per guard: on duty now?, current gate and shift, hours today / this week / this month."""
+        cid = request.query_params.get('community')
+        staff = StaffMember.objects.filter(role='guard', is_active=True, user__isnull=False).select_related('user')
+        if cid:
+            staff = staff.filter(community=parse_uuid(cid, 'community'))
+        ids = community_ids_for(request.user, MANAGER_ROLES)
+        if ids is not None:
+            staff = staff.filter(community__in=ids)
+        now = timezone.now()
+        local_today = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start = local_today - timedelta(days=local_today.weekday())
+        month_start = local_today.replace(day=1)
+        rows = []
+        for m in staff.order_by('name'):
+            shifts = list(GuardShift.objects.filter(guard=m.user, community=m.community, started_at__gte=month_start - timedelta(days=1))
+                          .select_related('gate').order_by('-started_at'))
+            current = next((s for s in shifts if s.ended_at is None), None)
+            last = shifts[0] if shifts else GuardShift.objects.filter(guard=m.user, community=m.community).order_by('-started_at').first()
+            rows.append({
+                'id': str(m.id), 'name': m.name, 'phone': m.phone or m.user.phone, 'designation': m.designation,
+                'planned_shift': m.shift, 'on_duty': current is not None,
+                'gate': current.gate.name if current and current.gate else (None if not current else 'All gates'),
+                'shift': current.get_shift_display() if current else None,
+                'since': current.started_at if current else None,
+                'hours_today': _shift_hours(shifts, local_today),
+                'hours_week': _shift_hours(shifts, week_start),
+                'hours_month': _shift_hours(shifts, month_start),
+                'last_seen': (last.ended_at or last.started_at) if last else None,
+            })
+        rows.sort(key=lambda r: (not r['on_duty'], r['name']))
+        return Response(rows)

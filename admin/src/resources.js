@@ -504,6 +504,54 @@ R.incidents = {
   ],
 };
 
+// ---------------------------------------------------------------- Guard duty
+const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const startOfWeek = () => { const d = startOfToday(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; };
+const hrs = (h) => (h ? `${h} h` : '0 h');
+
+R['guard-duty'] = {
+  title: 'Guard duty', path: '/manage/guard-shifts/board/', icon: '🛡️', communityOnly: true, searchable: false,
+  empty: 'Guards appear here once added under Staff & roles with an app login phone. They start shifts in the GlobaCity Guard app.',
+  columns: [
+    { label: 'Guard', value: (j) => j.name, sub: (j) => F.join(j.phone, j.designation) },
+    { label: 'Status', badge: (j) => (j.on_duty ? ['On duty', 'success'] : ['Off duty', '']) },
+    { label: 'Gate · shift', value: (j) => (j.on_duty ? F.join(j.gate, (j.shift || '').split(' (')[0]) : '—'),
+      sub: (j) => (j.on_duty ? `since ${F.date(j.since)}` : j.last_seen ? `last seen ${F.date(j.last_seen)}` : 'never on duty yet') },
+    { label: 'Today', value: (j) => hrs(j.hours_today) },
+    { label: 'This week', value: (j) => hrs(j.hours_week) },
+    { label: 'This month', value: (j) => hrs(j.hours_month) },
+  ],
+  titleOf: (j) => j.name,
+  details: (j) => [['Status', j.on_duty ? `On duty at ${j.gate} (${j.shift})` : 'Off duty'], ['Since', F.date(j.since)],
+    ['Phone', j.phone], ['Designation', j.designation], ['Planned shift', j.planned_shift],
+    ['Hours today', hrs(j.hours_today)], ['Hours this week', hrs(j.hours_week)], ['Hours this month', hrs(j.hours_month)],
+    ['Last seen', F.date(j.last_seen)]],
+  canCreate: false, canEdit: false, canDelete: false,
+};
+
+R['guard-shifts'] = {
+  title: 'Shift log', path: '/manage/guard-shifts/', icon: '🕒', communityOnly: true,
+  columns: [
+    { label: 'Guard', value: (j) => j.guard_name, sub: (j) => j.guard_phone },
+    { label: 'Gate', value: (j) => j.gate_name || 'All gates' },
+    { label: 'Shift', value: (j) => (j.shift_label || '').split(' (')[0], sub: (j) => (j.shift_label || '').split(' (')[1]?.replace(')', '') },
+    { label: 'Started', value: (j) => F.date(j.started_at) },
+    { label: 'Ended', value: (j) => (j.ended_at ? F.date(j.ended_at) : '—') },
+    { label: 'Hours', value: (j) => hrs(j.hours) },
+    { label: 'Status', badge: (j) => (j.on_duty ? ['On duty', 'success'] : ['Completed', '']) },
+  ],
+  titleOf: (j) => `${j.guard_name} · ${(j.shift_label || '').split(' (')[0]}`,
+  details: (j) => [['Guard', F.join(j.guard_name, j.guard_phone)], ['Gate', j.gate_name || 'All gates'], ['Shift', j.shift_label],
+    ['Started', F.date(j.started_at)], ['Ended', j.ended_at ? F.date(j.ended_at) : 'Still on duty'], ['Hours', hrs(j.hours)]],
+  filters: [['On duty now', { ended_at__isnull: 'true' }], ['Today', { started_at__gte: startOfToday().toISOString() }],
+    ['This week', { started_at__gte: startOfWeek().toISOString() }], ['All', {}]],
+  canCreate: false, canEdit: false,
+  actions: [
+    { label: 'End shift now', path: 'end/', tone: 'warning', visible: (j) => j.on_duty,
+      confirm: 'End this shift now? Use this when a guard forgot to sign off.', success: 'Shift ended' },
+  ],
+};
+
 // ---------------------------------------------------------------- Moderation
 R.forum = {
   title: 'Forum posts', path: '/manage/forum/', icon: '💬', communityOnly: true,
@@ -599,7 +647,8 @@ export const NAV = [
   ['Help desk', [['r/tickets', 'Tickets', 'tickets'], ['r/ticket-categories', 'Categories', 'ticket-categories']]],
   ['Communication', [['r/notices', 'Notices', 'notices'], ['r/polls', 'Polls', 'polls'], ['r/events', 'Events', 'events']]],
   ['Requests', [['r/move-requests', 'Move in / out', 'move-requests'], ['r/vendors', 'Vendors', 'vendors'], ['r/bookings', 'Bookings', 'bookings']]],
-  ['Security', [['r/visitor-log', 'Visitor log', 'visitor-log'], ['r/sos', 'SOS alerts', 'sos'], ['r/incidents', 'Incidents', 'incidents']]],
+  ['Security', [['r/guard-duty', 'Guard duty', 'guard-duty'], ['r/guard-shifts', 'Shift log', 'guard-shifts'],
+    ['r/visitor-log', 'Visitor log', 'visitor-log'], ['r/sos', 'SOS alerts', 'sos'], ['r/incidents', 'Incidents', 'incidents']]],
   ['Moderation', [['r/forum', 'Forum', 'forum'], ['r/classifieds', 'Classifieds', 'classifieds']]],
   ['People', [['r/staff', 'Staff & roles', 'staff'], ['r/emergency-contacts', 'Emergency contacts', 'emergency-contacts']]],
   ['Platform', [['r/platform-communities', 'All communities', 'platform-communities'], ['r/platform-cities', 'Cities', 'platform-cities']]],

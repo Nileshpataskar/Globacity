@@ -7,10 +7,13 @@ import 'token_store.dart';
 
 /// Error with a user-presentable message extracted from the API response.
 class ApiException implements Exception {
-  ApiException(this.message, {this.statusCode});
+  ApiException(this.message, {this.statusCode, this.code});
 
   final String message;
   final int? statusCode;
+
+  /// Machine-readable reason from the API, e.g. `not_registered`.
+  final String? code;
 
   @override
   String toString() => message;
@@ -76,7 +79,9 @@ class ApiClient {
     try {
       return (await call()).data as T;
     } on DioException catch (e) {
-      throw ApiException(_message(e), statusCode: e.response?.statusCode);
+      final data = e.response?.data;
+      throw ApiException(_message(e), statusCode: e.response?.statusCode,
+          code: data is Map && data['code'] is String ? data['code'] as String : null);
     }
   }
 

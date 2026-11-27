@@ -282,6 +282,7 @@ class Visitor {
     required this.time,
     required this.passCode,
     required this.unitLabel,
+    this.photoUrl,
     this.phone,
     this.company,
     this.vehicleNo,
@@ -298,6 +299,7 @@ class Visitor {
         time: _date(j['checked_in_at'] ?? j['expected_at'] ?? j['created_at']),
         passCode: _str(j['pass_code']),
         unitLabel: _str(j['unit_label']),
+        photoUrl: (j['photo'] as String?)?.isEmpty ?? true ? null : j['photo'] as String,
         phone: _strOrNull(j['phone']),
         company: _strOrNull(j['company']),
         vehicleNo: _strOrNull(j['vehicle_no']),
@@ -313,6 +315,9 @@ class Visitor {
   final DateTime time;
   final String passCode;
   final String unitLabel;
+
+  /// Photo the guard took at the gate (walk-ins).
+  final String? photoUrl;
   final String? phone;
   final String? company;
   final String? vehicleNo;
@@ -690,6 +695,9 @@ class CommunityEvent {
     required this.category,
     required this.attendees,
     this.going = false,
+    this.capacity,
+    this.myGuests = 0,
+    this.endsAt,
   });
 
   factory CommunityEvent.fromJson(Json j) => CommunityEvent(
@@ -701,6 +709,9 @@ class CommunityEvent {
         category: _str(j['category']),
         attendees: (j['attendees'] as num?)?.toInt() ?? 0,
         going: j['going'] == true,
+        capacity: (j['capacity'] as num?)?.toInt(),
+        myGuests: (j['my_guests'] as num?)?.toInt() ?? 0,
+        endsAt: j['ends_at'] == null ? null : _date(j['ends_at']),
       );
 
   final String id;
@@ -711,6 +722,13 @@ class CommunityEvent {
   final String category;
   final int attendees;
   final bool going;
+
+  /// Maximum people (null = no limit).
+  final int? capacity;
+
+  /// People this household is bringing (including the resident) when [going].
+  final int myGuests;
+  final DateTime? endsAt;
 }
 
 class ForumReply {

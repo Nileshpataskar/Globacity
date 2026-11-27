@@ -35,7 +35,7 @@ class PaymentsScreen extends ConsumerWidget {
                     borderRadius: AppRadius.cardRadius,
                   ),
                   child: summary.when(
-                    loading: () => const SizedBox(height: 96, child: Center(child: CircularProgressIndicator(color: Colors.white))),
+                    loading: () => const SizedBox(height: 96, child: SkeletonLines(lines: 3)),
                     error: (e, _) => Text(e.toString(), style: context.text.bodyMedium?.copyWith(color: Colors.white)),
                     data: (s) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

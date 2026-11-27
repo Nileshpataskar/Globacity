@@ -118,7 +118,7 @@ class _JoinCommunityScreenState extends ConsumerState<JoinCommunityScreen> {
           future: _results,
           builder: (context, snap) {
             if (snap.connectionState != ConnectionState.done) {
-              return const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()));
+              return const SizedBox(height: 360, child: SkeletonList(count: 4, padding: EdgeInsets.zero));
             }
             if (snap.hasError) {
               return EmptyState(icon: Icons.cloud_off_rounded, title: "Couldn't search", message: '${snap.error}',
@@ -190,7 +190,7 @@ class _JoinCommunityScreenState extends ConsumerState<JoinCommunityScreen> {
           child: FutureBuilder<List<TowerOption>>(
             future: _towers,
             builder: (context, snap) => !snap.hasData
-                ? (snap.hasError ? Text('${snap.error}') : const LinearProgressIndicator())
+                ? (snap.hasError ? Text('${snap.error}') : const SkeletonLines(lines: 1))
                 : snap.data!.isEmpty
                 ? _NotSetUp(
                     message: '${c.name} hasn\'t added its towers and flats yet. '
@@ -212,7 +212,7 @@ class _JoinCommunityScreenState extends ConsumerState<JoinCommunityScreen> {
             child: FutureBuilder<List<UnitOption>>(
               future: _units,
               builder: (context, snap) => !snap.hasData
-                  ? (snap.hasError ? Text('${snap.error}') : const LinearProgressIndicator())
+                  ? (snap.hasError ? Text('${snap.error}') : const SkeletonLines(lines: 1))
                   : snap.data!.isEmpty
                   ? _NotSetUp(message: '${_tower?.name ?? 'This tower'} has no flats yet. Please ask your community management to add them.')
                   : DropdownMenu<UnitOption>(

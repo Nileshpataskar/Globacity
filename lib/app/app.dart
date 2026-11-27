@@ -6,6 +6,7 @@ import '../core/config/app_config.dart';
 import '../core/theme/app_theme.dart';
 import '../data/models.dart';
 import '../data/providers.dart';
+import 'gate_alerts.dart';
 import 'realtime.dart';
 import 'router.dart';
 
@@ -20,6 +21,9 @@ class _GlobacityAppState extends ConsumerState<GlobacityApp> {
   @override
   void initState() {
     super.initState();
+    // Tapping a "visitor at the gate" alert opens the approval screen.
+    GateAlerts.onOpen = (visitorId) => appRouter.push(Routes.approval(visitorId));
+    if (!AppConfig.guardApp) GateAlerts.init();
     ref.read(apiProvider).onSessionExpired = () {
       ref.read(sessionProvider.notifier).expired();
       appRouter.go(Routes.login);

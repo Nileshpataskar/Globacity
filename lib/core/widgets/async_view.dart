@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../utils/context_ext.dart';
-import 'brand.dart';
+import 'skeleton.dart';
 import 'common.dart';
 
 /// Renders an [AsyncValue]: spinner while loading, error with retry, or [data].
 class AsyncView<T> extends StatelessWidget {
-  const AsyncView({super.key, required this.value, required this.data, this.onRetry, this.compact = false});
+  const AsyncView({super.key, required this.value, required this.data, this.onRetry, this.compact = false, this.skeleton});
 
   final AsyncValue<T> value;
   final Widget Function(T data) data;
@@ -16,18 +16,15 @@ class AsyncView<T> extends StatelessWidget {
   /// Smaller loading/error UI for use inside cards and sections.
   final bool compact;
 
+  /// Custom loading placeholder (defaults to a skeleton list, or skeleton lines when [compact]).
+  final Widget? skeleton;
+
   @override
   Widget build(BuildContext context) {
     return value.when(
       data: data,
-      loading: () => Center(
-        child: Padding(
-          padding: EdgeInsets.all(compact ? 16 : 48),
-          child: compact
-              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4))
-              : const BrandLoader(),
-        ),
-      ),
+      // Skeleton placeholders instead of spinners, so the screen keeps its shape while loading.
+      loading: () => skeleton ?? (compact ? const SkeletonLines() : const SkeletonList()),
       error: (e, _) => compact
           ? Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),

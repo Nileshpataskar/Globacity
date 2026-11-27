@@ -150,8 +150,9 @@ class AppActions {
     ref.invalidate(pollsProvider);
   }
 
-  Future<void> rsvp(String eventId, bool going) async {
-    await _post('/events/$eventId/rsvp/', {'going': going, 'guests': 1});
+  /// [people] = how many are coming from this flat, including the resident.
+  Future<void> rsvp(String eventId, bool going, {int people = 1}) async {
+    await _post('/events/$eventId/rsvp/', {'going': going, 'guests': people});
     ref.invalidate(eventsProvider);
   }
 

@@ -6,10 +6,12 @@ plugins {
 
 android {
     namespace = "com.globatechgroup.globacity_guard"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37 // flutter_local_notifications needs 37+ (minSdk is unchanged)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Needed by flutter_local_notifications (visitor-at-gate alerts).
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -46,4 +48,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

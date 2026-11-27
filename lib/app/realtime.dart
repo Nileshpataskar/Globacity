@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../core/config/app_config.dart';
 import '../core/config/env.dart';
 import '../data/guard.dart';
 import '../data/providers.dart';
+import 'gate_alerts.dart';
 import 'router.dart';
 
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -21,6 +23,9 @@ class Realtime {
   StreamSubscription<dynamic>? _sub;
   Timer? _retry;
   bool _active = false;
+
+  /// Visitor requests already rung for, so a reconnect doesn't ring twice.
+  final _ringing = <String>{};
 
   void start() {
     if (_active) return;
@@ -87,6 +92,17 @@ class Realtime {
 
     final visitorId = data['visitor_id'] as String?;
     final respond = data['action'] == 'respond' && visitorId != null;
+
+    // A guard is asking the resident to approve a visitor: ring like a call.
+    if (respond && !AppConfig.guardApp && _ringing.add(visitorId)) {
+      GateAlerts.visitorAtGate(visitorId: visitorId, title: '${msg['title'] ?? 'Visitor at the gate'}',
+          body: '${msg['body'] ?? ''}');
+      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        appRouter.push(Routes.approval(visitorId));
+      }
+      return;
+    }
+
     scaffoldMessengerKey.currentState
       ?..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(

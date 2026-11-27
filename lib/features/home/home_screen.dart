@@ -34,6 +34,7 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       body: AsyncView<Property?>(
         value: property,
+        skeleton: const HomeSkeleton(),
         onRetry: () => ref.invalidate(propertiesProvider),
         data: (p) => p == null
             ? const _AwaitingApproval()

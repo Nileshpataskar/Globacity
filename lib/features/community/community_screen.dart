@@ -52,14 +52,14 @@ class CommunityScreen extends ConsumerWidget {
           children: [
             AppCard(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
-              child: GridView.count(
-                crossAxisCount: 3,
+              child: GridView(
                 shrinkWrap: true,
+                padding: EdgeInsets.zero,
                 physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.05,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisExtent: 108),
                 children: [
-                  for (final (icon, label, color, route) in modules)
-                    ActionTile(icon: icon, label: label, color: color, onTap: () => context.push(route)),
+                  for (final (i, (icon, label, color, route)) in modules.indexed)
+                    ActionTile(icon: icon, label: label, color: color, onTap: () => context.push(route)).pop(40 * i),
                 ],
               ),
             ),
